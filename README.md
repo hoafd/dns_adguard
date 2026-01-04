@@ -17,7 +17,14 @@ Hệ thống DNS cá nhân tối ưu, chặn quảng cáo mạnh mẽ và phân 
 Để hệ thống vận hành ổn định và tự động hóa hoàn toàn, bạn cần chuẩn bị:
 
 ### 1. Phần cứng & Hệ điều hành
-* **OS:** Ubuntu 24.04 LTS hoặc Debian 11/12.
+## 💻 Khả năng tương thích (Compatibility)
+
+Hệ thống này được thiết kế và kiểm thử tối ưu cho:
+* **Hệ điều hành:** Ubuntu 24.04 LTS (Khuyên dùng), Ubuntu 22.04, Debian 12.
+* **Kiến trúc CPU:** x86_64 (PC/Server), ARM64 (Raspberry Pi 4/5).
+
+**Lưu ý:** Nếu sử dụng trên các hệ điều hành không dựa trên Debian (như CentOS, Fedora), bạn cần cài đặt thủ công các gói phụ thuộc thay vì sử dụng script setup tự động.
+
 * **RAM:** Tối thiểu 512MB (Khuyên dùng **768MB** để tối ưu bộ nhớ đệm Unbound).
 * **Docker:** Đã cài đặt Docker và Docker Compose.
 
