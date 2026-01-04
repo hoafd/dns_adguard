@@ -1,25 +1,40 @@
 # 🛡️ DNS AdGuard Master (Recursive & Secure)
 
-Hệ thống DNS cá nhân chặn quảng cáo mạnh mẽ, tích hợp **AdGuard Home** và **Unbound**. Giải pháp này giúp tối ưu hóa tốc độ truy cập, bảo vệ quyền riêng tư và lọc nội dung độc hại trên toàn bộ hệ thống mạng của bạn.
+Hệ thống DNS cá nhân tối ưu, chặn quảng cáo mạnh mẽ và phân giải đệ quy. Tích hợp sẵn cơ chế bảo mật Cloudflare Zero Trust và tự động gia hạn SSL.
 
 ---
 
 ## 🌟 Tính năng nổi bật
-- **Recursive DNS:** Unbound tự truy vấn đến các Root Servers, không phụ thuộc vào DNS bên thứ ba.
-- **Auto-SSL:** Cấp chứng chỉ Let's Encrypt qua Cloudflare API, tự động gia hạn và khởi động lại AdGuard khi có chứng chỉ mới.
-- **Tối ưu RAM:** Script tự động cấu hình bộ nhớ đệm (Cache) dựa trên RAM thực tế của máy chủ.
-- **Health Check:** Có script kiểm tra sức khỏe hệ thống (Container, Port, Khả năng chặn thực tế).
-- **Firewall:** Tự động cấu hình UFW bảo vệ các cổng nhạy cảm.
+* **Recursive DNS:** Sử dụng Unbound tự truy vấn Root Servers, không phụ thuộc vào các DNS bên thứ ba.
+* **Auto-SSL:** Cấp và gia hạn Let's Encrypt qua Cloudflare API, tự động **Restart AdGuard** khi có chứng chỉ mới thông qua Deploy Hook.
+* **Firewall (UFW):** Tự động cấu hình mở cổng 53 (DNS), 3000 (Setup), 80/443 (SSL) và bảo vệ các cổng hệ thống khác.
+* **Health Check:** Script chuyên dụng để kiểm tra sức khỏe hệ thống từ trạng thái Container đến khả năng chặn thực tế.
+
+---
+
+## 📋 Yêu cầu hệ thống (System Requirements)
+
+Để hệ thống vận hành ổn định và tự động hóa hoàn toàn, bạn cần chuẩn bị:
+
+### 1. Phần cứng & Hệ điều hành
+* **OS:** Ubuntu 24.04 LTS hoặc Debian 11/12.
+* **RAM:** Tối thiểu 512MB (Khuyên dùng **768MB** để tối ưu bộ nhớ đệm Unbound).
+* **Docker:** Đã cài đặt Docker và Docker Compose.
+
+### 2. Cấu hình Cloudflare (Bắt buộc cho SSL & Remote Access)
+Vì hệ thống sử dụng phương thức **DNS-01 Challenge** để cấp SSL và **Zero Trust** để truy cập từ xa, bạn cần:
+* **Cloudflare API Token:** Quyền `Zone:DNS:Edit` (Dùng để xác thực cấp chứng chỉ SSL Let's Encrypt).
+* **Cloudflare Tunnel Token:** Để vận hành dịch vụ `cloudflared`, giúp truy cập trang quản trị an toàn mà không cần mở Port.
+* **Domain:** Tên miền đã được trỏ về NameServer của Cloudflare.
 
 ---
 
 ## 📂 Cấu trúc thư mục hệ thống
-Mọi dữ liệu được lưu trữ tập trung tại máy chủ ở đường dẫn:
-- **Thư mục gốc:** `/opt/server-central/dns/`
-- **Cấu hình Unbound:** `./unbound/unbound.conf`
-- **Dữ liệu AdGuard:** - `./adguard/conf/` (Chứa file AdGuardHome.yaml)
-  - `./adguard/work/` (Chứa Database và logs)
-- **Chứng chỉ SSL:** `/etc/letsencrypt/live/<domain-cua-ban>/` (Được mount vào Docker)
+* **Thư mục gốc:** `/opt/server-central/dns/`
+* **Cấu hình Unbound:** `./unbound/unbound.conf` (Mount vào `/opt/unbound/etc/unbound/`)
+* **Dữ liệu AdGuard:** * `./adguard/conf/` (File cấu hình AdGuardHome.yaml)
+    * `./adguard/work/` (Dữ liệu lọc, Database và Logs)
+* **Đường dẫn SSL (Host):** `/etc/letsencrypt/live/<your-domain>/` (Mount Read-only vào Docker)
 
 ---
 
