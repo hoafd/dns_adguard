@@ -141,5 +141,5 @@ echo -e "✅ Tường lửa (UFW) đã được bật và mở cổng: 53, $ADG_
 echo -e "✅ Đã thiết lập Tự động dọn dẹp rác Docker vào 0h Chủ Nhật."
 echo -e "\e[33mBƯỚC TIẾP THEO:\e[0m"
 echo -e "1. Vào AdGuard -> DNS Settings -> Upstream: 127.0.0.1:5335"
-echo -e "2. Link Filter: https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
+echo -e "2. Link Filter của Hoa FD (https://github.com/hoafd/my-dns-blocklist): https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
 echo -e "======================================================================\n"
