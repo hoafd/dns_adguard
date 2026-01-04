@@ -33,7 +33,7 @@ Persistent Data is stored at:
 Run the following command for automatic installation:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
 ```
 
 **Note:** Ensure you have your Cloudflare API Token and Tunnel Token ready before running the script.
@@ -53,7 +53,7 @@ After installation, follow these steps to finalize the setup:
 Use the following script to check Container status and DNS resolution performance:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh) | bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh | bash
 ```
 
 ## 🔄 Updates & Maintenance
@@ -62,15 +62,21 @@ curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_he
 Use this to fetch the latest AdGuard/Unbound versions without changing Ports or RAM settings.
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh) | sudo bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh | sudo bash
 ```
 
 ### ⚙️ Re-configure
 Use this to change the Admin Port, allocate more RAM, or reinstall SSL certificates.
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
 ```
+
+### ### 🗑️ Uninstall
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_uninstall.sh | sudo bash
+```
+---
 
 ## ☕ Support my work
 
