@@ -1,18 +1,16 @@
-# 🛡️ DNS AdGuard Master
+# 🛡️ DNS AdGuard Master (Recursive & Secure)
 
-Hệ thống DNS chặn quảng cáo bảo mật cao tích hợp **AdGuard Home** và **Unbound**, được tối ưu hóa đặc biệt cho hiệu suất và bảo mật trên **Ubuntu 24.04**.
+Hệ thống DNS cá nhân chặn quảng cáo mạnh mẽ, tích hợp **AdGuard Home** và **Unbound**. Giải pháp này giúp tối ưu hóa tốc độ truy cập, bảo vệ quyền riêng tư và lọc nội dung độc hại trên toàn bộ hệ thống mạng của bạn.
 
 ---
 
-## 📋 Điều kiện hệ thống chạy
+## 🌟 Tính năng nổi bật
 
-* **Hệ điều hành**: Ubuntu 24.04 LTS hoặc Debian 11/12.
-* **Bộ nhớ (RAM)**: Tối thiểu 512MB RAM trống.
-* **Mạng & Cổng**:
-    * Cổng **53**: Phải sẵn dụng (Script sẽ tự động giải phóng khỏi systemd-resolved).
-    * Cổng **22**: Mở để quản trị SSH.
-    * Cổng **3000**: Giữ nội bộ (Truy cập qua Cloudflare Tunnel).
-* **Quyền hạn**: Cần quyền `sudo`.
+* **Chặn quảng cáo tầng DNS:** Sử dụng AdGuard Home để lọc hàng triệu tên miền quảng cáo/theo dõi.
+* **Truy vấn đệ quy (Recursive DNS):** Tích hợp Unbound để tự phân giải DNS từ Root Servers, không phụ thuộc vào Google hay Cloudflare.
+* **Bảo mật SSL:** Hỗ trợ tự động cấp và gia hạn chứng chỉ Let's Encrypt qua Cloudflare API.
+* **Vận hành an toàn:** Cổng quản trị được ẩn sau Cloudflare Tunnel, chỉ mở cổng 53 (DNS) cho truy vấn công cộng.
+* **Tối ưu RAM:** Script tự động tính toán dung lượng Cache phù hợp cho hệ thống (Hỗ trợ mức 256MB - 768MB).
 
 ---
 
@@ -21,18 +19,27 @@ Hệ thống DNS chặn quảng cáo bảo mật cao tích hợp **AdGuard Home*
 Sao chép và dán lệnh dưới đây vào Terminal của bạn:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
+curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
 ```
 
 ---
 
-## ⚙️ Thiết lập sau cài đặt
+## ⚙️ Cấu hình sau cài đặt
 
-1. **Cloudflare Zero Trust**: Trỏ **Public Hostname** về `http://localhost:3000`.
-2. **DNS Upstream**: Trong AdGuard Home, thiết lập Upstream là `127.0.0.1:5335`.
-3. **Bảo mật**: Chỉ có cổng 22 và 53 được mở công khai qua UFW.
+### 1. Thiết lập ban đầu (Setup Wizard)
+Sau khi cài đặt, hãy truy cập `http://<IP_Server_cua_ban>:3000` để hoàn tất cấu hình AdGuard Home.
+
+### 2. Cài đặt SSL cho Dashboard
+Tại giao diện Web AdGuard -> **Settings** -> **Encryption settings**:
+* **Server Name:** `domain-cua-ban.com`
+* **Certificate path:** `/etc/letsencrypt/live/domain-cua-ban.com/fullchain.pem`
+* **Private key path:** `/etc/letsencrypt/live/domain-cua-ban.com/privkey.pem`
+
+### 3. Kết nối Unbound
+Tại mục **Settings** -> **DNS Settings** -> **Upstream DNS servers**, điền:
+`127.0.0.1:5335`
 
 ---
 
-## ⚖️ Giấy phép (License)
-Dự án được cấp phép theo [MIT License](LICENSE). Copyright (c) 2026 **hoafd**.
+## ⚖️ Giấy phép
+Dự án được cấp phép theo **MIT License**. Copyright (c) 2026.
