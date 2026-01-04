@@ -34,13 +34,13 @@ fi
 
 # 4. CẤU HÌNH SSL (CERTBOT DNS-01)
 echo -e "\e[34m----------------------------------------------------------\e[0m"
-echo -e "\e[33m>>> CÀI ĐẶT CHỨNG CHỈ SSL CHUYÊN NGHIỆP\e[0m"
+echo -e "\e[33m>>> CÀI ĐẶT CHỨNG CHỈ SSL\e[0m"
 printf "Nhập Cloudflare API Token (Nhấn Enter để bỏ qua): "
 read CF_SSL_TOKEN < /dev/tty
 
 HAS_SSL=false
 if [ ${#CF_SSL_TOKEN} -gt 10 ]; then
-    printf "Nhập Tên miền (VD: dns.hoafd.id.vn): "
+    printf "Nhập Tên miền: "
     read DOMAIN_NAME < /dev/tty
     printf "Nhập Email: "
     read EMAIL < /dev/tty
