@@ -9,7 +9,7 @@ Hệ thống DNS cá nhân tối ưu, chặn quảng cáo mạnh mẽ và phân 
 * **Auto-SSL:** Cấp và gia hạn Let's Encrypt qua Cloudflare API, tự động **Restart AdGuard** khi có chứng chỉ mới thông qua Deploy Hook.
 * **Firewall (UFW):** Tự động cấu hình mở cổng 53 (DNS), 3000 (Setup), 80/443 (SSL) và bảo vệ các cổng hệ thống khác.
 * **Health Check:** Script chuyên dụng để kiểm tra sức khỏe hệ thống từ trạng thái Container đến khả năng chặn thực tế.
-* **Tùy chọn cổng quản trị (Admin Port) và tự động cấu hình tường lửa (ufw).
+* Tùy chọn cổng quản trị (Admin Port) và tự động cấu hình tường lửa (ufw).
 
 ---
 
