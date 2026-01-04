@@ -113,6 +113,21 @@ echo -e "   - Certificate path: \e[32m/etc/letsencrypt/live/$DOMAIN_NAME/fullcha
 echo -e "   - Private key path: \e[32m/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem\e[0m"
 echo -e ""
 fi
-echo -e "\e[33mBƯỚC 3: KẾT NỐI UNBOUND\e[0m"
-echo -e "   - Settings -> DNS Settings -> Upstream DNS điền: \e[32m127.0.0.1:5335\e[0m"
+
+# 7. HƯỚNG DẪN SAU CÀI ĐẶT
+SERVER_IP=$(hostname -I | awk '{print $1}')
+MY_FILTER="https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
+
+echo -e "\n\e[32m======================================================================"
+echo -e "   🎉 CÀI ĐẶT DNS ADGUARD HOÀN TẤT!"
+echo -e "======================================================================\e[0m"
+echo -e "\e[33mBƯỚC 1: THIẾT LẬP ADGUARD\e[0m -> http://$SERVER_IP:3000"
+echo -e ""
+echo -e "\e[33mBƯỚC 2: THÊM BỘ LỌC CÁ NHÂN CỦA BẠN (QUAN TRỌNG)\e[0m"
+echo -e "   - Vào mục: Filters -> DNS Blocklists"
+echo -e "   - Nhấn 'Add blocklist' -> 'Add a custom list'"
+echo -e "   - Tên: My Personal Blocklist"
+echo -e "   - URL: \e[36m$MY_FILTER\e[0m"
+echo -e ""
+echo -e "\e[33mBƯỚC 3: KẾT NỐI UNBOUND\e[0m -> Upstream DNS: 127.0.0.1:5335"
 echo -e "\e[32m======================================================================\n\e[0m"
