@@ -56,10 +56,6 @@ Sử dụng script sau để kiểm tra trạng thái Container và khả năng 
 curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh | bash
 ```
 
-### ### 🗑️ Uninstall
-```bash
-curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_uninstall.sh | sudo bash
-```
 ---
 ## 🔄 Cập nhật & Bảo trì
 
@@ -67,16 +63,20 @@ curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_uninstall
 Dùng khi bạn chỉ muốn tải phiên bản AdGuard/Unbound mới nhất mà không thay đổi Port hay RAM.
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh) | sudo bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh | sudo bash
 ```
 
 ### ⚙️ Cài đặt lại (Re-configure)
 Dùng khi bạn muốn đổi cổng quản trị, cấp thêm RAM hoặc cài lại chứng chỉ SSL.
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
 ```
 
+### 🗑️ Uninstall
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_uninstall.sh | sudo bash
+```
 ## ☕ Support my work
 
 Nếu dự án này giúp ích cho bạn, hãy ủng hộ tôi một ly cà phê tại:
