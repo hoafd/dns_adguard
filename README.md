@@ -78,6 +78,23 @@ Tại mục **Settings** -> **DNS Settings** -> **Upstream DNS servers**, điề
 ```bash
 curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh | bash
 ```
+---
+
+## 🔄 Hướng dẫn Cập nhật (Update)
+
+Khi có phiên bản mới của AdGuard Home hoặc Unbound, bạn có hai cách để thực hiện cập nhật:
+
+### Cách 1: Cập nhật nhanh (Giữ nguyên cấu hình)
+Sử dụng script cập nhật để tải phiên bản phần mềm mới nhất mà không ảnh hưởng đến các thiết lập cổng (Port) hay RAM.
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_update.sh | sudo bash
+```
+
+### Cách 2: Cài đặt lại / Thay đổi cấu hình
+Sử dụng script cài đặt nếu bạn muốn thay đổi Cổng quản trị, cấp lại RAM cho Unbound hoặc cài đặt lại SSL.
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
+```
 
 ---
 
