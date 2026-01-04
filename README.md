@@ -5,12 +5,11 @@ Hệ thống DNS cá nhân chặn quảng cáo mạnh mẽ, tích hợp **AdGuar
 ---
 
 ## 🌟 Tính năng nổi bật
-
-* **Chặn quảng cáo tầng DNS:** Sử dụng AdGuard Home để lọc hàng triệu tên miền quảng cáo/theo dõi.
-* **Truy vấn đệ quy (Recursive DNS):** Tích hợp Unbound để tự phân giải DNS từ Root Servers, không phụ thuộc vào Google hay Cloudflare.
-* **Bảo mật SSL:** Hỗ trợ tự động cấp và gia hạn chứng chỉ Let's Encrypt qua Cloudflare API.
-* **Vận hành an toàn:** Cổng quản trị được ẩn sau Cloudflare Tunnel, chỉ mở cổng 53 (DNS) cho truy vấn công cộng.
-* **Tối ưu RAM:** Script tự động tính toán dung lượng Cache phù hợp cho hệ thống (Hỗ trợ mức 256MB - 768MB).
+- **Recursive DNS:** Unbound tự truy vấn đến các Root Servers, không phụ thuộc vào DNS bên thứ ba.
+- **Auto-SSL:** Cấp chứng chỉ Let's Encrypt qua Cloudflare API, tự động gia hạn và khởi động lại AdGuard khi có chứng chỉ mới.
+- **Tối ưu RAM:** Script tự động cấu hình bộ nhớ đệm (Cache) dựa trên RAM thực tế của máy chủ.
+- **Health Check:** Có script kiểm tra sức khỏe hệ thống (Container, Port, Khả năng chặn thực tế).
+- **Firewall:** Tự động cấu hình UFW bảo vệ các cổng nhạy cảm.
 
 ---
 
