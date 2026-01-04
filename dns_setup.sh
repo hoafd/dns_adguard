@@ -1,17 +1,17 @@
 #!/bin/bash
 # REPO: https://github.com/hoafd/dns_adguard
-# CẬP NHẬT: Mở cổng 3000, 80, 443 & Hướng dẫn SSL chi tiết
+# CẬP NHẬT: Tự động Restart AdGuard khi SSL gia hạn (Renew Hook)
 
 if [ "$(id -u)" -ne 0 ]; then echo "Vui lòng dùng: sudo -E bash ./dns_setup.sh"; exit 1; fi
 BASE_DIR="/opt/server-central/dns"
 set -e
 
-echo -e "\e[32m>>> BẮT ĐẦU CÀI ĐẶT DNS MASTER...\e[0m"
+echo -e "\e[32m>>> ĐANG KHỞI TẠO HỆ THỐNG DNS MASTER (HỖ TRỢ AUTO-RENEW SSL)...\e[0m"
 
 # 1. DỌN DẸP CONTAINER CŨ
 docker rm -f unbound adguard 2>/dev/null || true
 
-# 2. CẤU HÌNH RAM
+# 2. CẤU HÌNH RAM (Tối ưu cho Unbound theo yêu cầu của bạn)
 FREE_RAM=$(free -m | awk '/^Mem:/{print $7}')
 [ "$FREE_RAM" -gt 2000 ] && SUGGESTED_RAM=512 || SUGGESTED_RAM=256
 printf "Cấp RAM cho Unbound (MB, Enter để lấy $SUGGESTED_RAM): "
@@ -27,40 +27,38 @@ else
     printf "Dán Tunnel Token [BẮT BUỘC]: "
     read CF_TOKEN < /dev/tty
 fi
-if [ ${#CF_TOKEN} -gt 50 ]; then
-    cloudflared service uninstall 2>/dev/null || true
-    cloudflared service install "$CF_TOKEN"
-fi
+[ ${#CF_TOKEN} -gt 50 ] && (cloudflared service uninstall || true; cloudflared service install "$CF_TOKEN")
 
-# 4. CẤU HÌNH SSL (CERTBOT DNS-01)
+# 4. CẤU HÌNH SSL VỚI RENEW HOOK
 echo -e "\e[34m----------------------------------------------------------\e[0m"
-echo -e "\e[33m>>> CÀI ĐẶT CHỨNG CHỈ SSL\e[0m"
-printf "Nhập Cloudflare API Token (Nhấn Enter để bỏ qua): "
+echo -e "\e[33m>>> CÀI ĐẶT CHỨNG CHỈ SSL (CERTBOT DNS-01)\e[0m"
+printf "Nhập Cloudflare API Token (Nhấn Enter nếu đã có SSL): "
 read CF_SSL_TOKEN < /dev/tty
 
 HAS_SSL=false
 if [ ${#CF_SSL_TOKEN} -gt 10 ]; then
-    printf "Nhập Tên miền: "
+    printf "Nhập Tên miền (VD: dns.hoafd.id.vn): "
     read DOMAIN_NAME < /dev/tty
-    printf "Nhập Email: "
+    printf "Nhập Email quản lý: "
     read EMAIL < /dev/tty
     
     apt update && apt install -y certbot python3-certbot-dns-cloudflare -qq
     mkdir -p ~/.secrets && echo "dns_cloudflare_api_token = $CF_SSL_TOKEN" > ~/.secrets/cloudflare.ini
     chmod 600 ~/.secrets/cloudflare.ini
-    certbot certonly --dns-cloudflare --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
-      -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "$EMAIL"
+    
+    # Lệnh Certbot với --deploy-hook để tự động restart AdGuard khi có chứng chỉ mới
+    certbot certonly --dns-cloudflare \
+      --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
+      -d "$DOMAIN_NAME" \
+      --non-interactive --agree-tos -m "$EMAIL" \
+      --deploy-hook "docker restart adguard"
     HAS_SSL=true
 fi
 
-# 5. FIREWALL & CỔNG
-ufw allow 22/tcp || true
-ufw allow 53 || true
-ufw allow 80/tcp || true
-ufw allow 443/tcp || true
-ufw allow 3000/tcp || true
-ufw default deny incoming || true
-echo "y" | ufw enable || true
+# 5. FIREWALL & GIẢI PHÓNG CỔNG 53
+ufw allow 22/tcp && ufw allow 53 && ufw allow 80/tcp && ufw allow 443/tcp && ufw allow 3000/tcp
+echo "y" | ufw enable
+[ -f /etc/resolv.conf ] && (systemctl stop systemd-resolved || true; systemctl disable systemd-resolved || true; echo "nameserver 1.1.1.1" > /etc/resolv.conf)
 
 # 6. KHỞI CHẠY DOCKER
 mkdir -p "$BASE_DIR/unbound" "$BASE_DIR/adguard/conf" "$BASE_DIR/adguard/work"
@@ -91,43 +89,20 @@ services:
     restart: unless-stopped
     network_mode: host
     volumes: ["./adguard/work:/opt/adguardhome/work","./adguard/conf:/opt/adguardhome/conf","/etc/letsencrypt:/etc/letsencrypt:ro"]
-    depends_on: [unbound]
 EOF
 
 cd "$BASE_DIR" && docker compose up -d --force-recreate
 
-# 7. HƯỚNG DẪN SAU CÀI ĐẶT CỰC CHI TIẾT
-SERVER_IP=$(hostname -I | awk '{print $1}')
-echo -e "\n\e[32m======================================================================"
-echo -e "   🎉 CÀI ĐẶT DNS ADGUARD HOÀN TẤT!"
-echo -e "======================================================================\e[0m"
-echo -e "\e[33mBƯỚC 1: THIẾT LẬP ADGUARD (SETUP WIZARD)\e[0m"
-echo -e "   👉 Truy cập: \e[36mhttp://$SERVER_IP:3000\e[0m"
-echo -e ""
-if [ "$HAS_SSL" = true ]; then
-echo -e "\e[33mBƯỚC 2: CÀI ĐẶT CHỨNG CHỈ SSL VÀO ADGUARD\e[0m"
-echo -e "   - Trong Web AdGuard: Vào 'Settings' -> 'Encryption settings'."
-echo -e "   - Bật 'Enable Encryption'."
-echo -e "   - Server name: \e[32m$DOMAIN_NAME\e[0m"
-echo -e "   - Certificate path: \e[32m/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem\e[0m"
-echo -e "   - Private key path: \e[32m/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem\e[0m"
-echo -e ""
-fi
-
 # 7. HƯỚNG DẪN SAU CÀI ĐẶT
 SERVER_IP=$(hostname -I | awk '{print $1}')
-MY_FILTER="https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
-
 echo -e "\n\e[32m======================================================================"
-echo -e "   🎉 CÀI ĐẶT DNS ADGUARD HOÀN TẤT!"
+echo -e "   🎉 CẬP NHẬT DNS MASTER THÀNH CÔNG!"
 echo -e "======================================================================\e[0m"
-echo -e "\e[33mBƯỚC 1: THIẾT LẬP ADGUARD\e[0m -> http://$SERVER_IP:3000"
-echo -e ""
-echo -e "\e[33mBƯỚC 2: THÊM BỘ LỌC CÁ NHÂN CỦA BẠN (QUAN TRỌNG)\e[0m"
-echo -e "   - Vào mục: Filters -> DNS Blocklists"
-echo -e "   - Nhấn 'Add blocklist' -> 'Add a custom list'"
-echo -e "   - Tên: My Personal Blocklist"
-echo -e "   - URL: \e[36m$MY_FILTER\e[0m"
-echo -e ""
-echo -e "\e[33mBƯỚC 3: KẾT NỐI UNBOUND\e[0m -> Upstream DNS: 127.0.0.1:5335"
+echo -e "👉 Truy cập Web UI: \e[36mhttp://$SERVER_IP:3000\e[0m"
+echo -e "✅ Đã thiết lập Auto-Restart AdGuard mỗi khi SSL gia hạn thành công."
+if [ "$HAS_SSL" = true ]; then
+echo -e "✅ Chứng chỉ cho: \e[32m$DOMAIN_NAME\e[0m"
+echo -e "   - Cert path: /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
+echo -e "   - Key path: /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
+fi
 echo -e "\e[32m======================================================================\n\e[0m"
