@@ -33,7 +33,7 @@ Dữ liệu được lưu trữ bền vững tại:
 Chạy lệnh sau để cài đặt tự động:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
 ```
 
 **Lưu ý:** Bạn cần chuẩn bị sẵn Cloudflare API Token và Tunnel Token trước khi chạy script.
@@ -53,9 +53,14 @@ Sau khi cài đặt xong, hãy thực hiện các bước sau để hoàn tất:
 Sử dụng script sau để kiểm tra trạng thái Container và khả năng phân giải DNS:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh) | bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh | bash
 ```
 
+### ### 🗑️ Uninstall
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_uninstall.sh | sudo bash
+```
+---
 ## 🔄 Cập nhật & Bảo trì
 
 ### 🚀 Cập nhật nhanh (Safe Update)
