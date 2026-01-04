@@ -1,12 +1,12 @@
 #!/bin/bash
 # REPO: https://github.com/hoafd/dns_adguard
-# CẬP NHẬT: Tùy chọn Cloudflare/SSL, tự bật Firewall, chọn Port
+# CẬP NHẬT: Port Selection, Auto-UFW, SSL Detection & Weekly Cleanup
 
 if [ "$(id -u)" -ne 0 ]; then echo "Vui lòng dùng: sudo -E bash ./dns_setup.sh"; exit 1; fi
 BASE_DIR="/opt/server-central/dns"
 set -e
 
-echo -e "\e[32m>>> ĐANG KHỞI TẠO HỆ THỐNG DNS MASTER...\e[0m"
+echo -e "\e[32m>>> ĐANG KHỞI TẠO HỆ THỐNG DNS MASTER (HARDENED)...\e[0m"
 
 # --- PHẦN 1: TỰ ĐỘNG CÀI ĐẶT DOCKER ---
 if ! [ -x "$(command -v docker)" ]; then
@@ -42,8 +42,17 @@ read INPUT_RAM < /dev/tty
 USER_RAM=${INPUT_RAM:-768}
 USER_RAM=$(echo "$USER_RAM" | tr -dc '0-9')
 
+# --- PHẦN 4: XỬ LÝ SSL & CLOUDFLARE ---
+# Tự động phát hiện chứng chỉ cũ
+EXISTING_CERTS=$(ls /etc/letsencrypt/live/ 2>/dev/null | wc -l || echo 0)
+HAS_SSL=false
+if [ "$EXISTING_CERTS" -gt 0 ]; then
+    echo -e "\e[32m[+] Phát hiện chứng chỉ cũ trên máy. Sẽ tự động tích hợp vào Docker.\e[0m"
+    HAS_SSL=true
+fi
+
 # Cloudflare Tunnel (Tùy chọn)
-printf "Bạn có muốn cài đặt Cloudflare Tunnel không? (y/n): "
+printf "Cài đặt Cloudflare Tunnel? (y/n): "
 read USE_CF < /dev/tty
 if [ "$USE_CF" == "y" ]; then
     printf "Dán Tunnel Token: "
@@ -54,16 +63,15 @@ if [ "$USE_CF" == "y" ]; then
     fi
 fi
 
-# SSL Setup (Tùy chọn)
-printf "Bạn có muốn cài đặt SSL Let's Encrypt qua Cloudflare không? (y/n): "
+# SSL Cài mới (Tùy chọn)
+printf "Cài mới/Cấp lại SSL Let's Encrypt? (y/n): "
 read USE_SSL < /dev/tty
-HAS_SSL=false
 if [ "$USE_SSL" == "y" ]; then
-    printf "Nhập Cloudflare API Token: "
+    printf "Cloudflare API Token: "
     read CF_SSL_TOKEN < /dev/tty
-    printf "Nhập Tên miền (VD: dns.hoafd.id.vn): "
+    printf "Tên miền (VD: dns.hoafd.id.vn): "
     read DOMAIN_NAME < /dev/tty
-    printf "Nhập Email: "
+    printf "Email: "
     read EMAIL < /dev/tty
     apt update && apt install -y certbot python3-certbot-dns-cloudflare -qq
     mkdir -p ~/.secrets && echo "dns_cloudflare_api_token = $CF_SSL_TOKEN" > ~/.secrets/cloudflare.ini
@@ -73,19 +81,16 @@ if [ "$USE_SSL" == "y" ]; then
     HAS_SSL=true
 fi
 
-# --- PHẦN 4: TỰ BẬT TƯỜNG LỬA ---
-echo ">>> Đang cấu hình và bật tường lửa (ufw)..."
+# --- PHẦN 5: TỰ BẬT TƯỜNG LỬA ---
+echo ">>> Đang cấu hình Tường lửa (UFW)..."
 ufw allow 22/tcp
 ufw allow 53/tcp
 ufw allow 53/udp
 ufw allow $ADG_PORT/tcp
-if [ "$HAS_SSL" = true ]; then
-    ufw allow 80/tcp
-    ufw allow 443/tcp
-fi
+[ "$HAS_SSL" = true ] && (ufw allow 80/tcp; ufw allow 443/tcp)
 echo "y" | ufw enable
 
-# --- PHẦN 5: KHỞI CHẠY DOCKER ---
+# --- PHẦN 6: KHỞI CHẠY DOCKER ---
 mkdir -p "$BASE_DIR/unbound" "$BASE_DIR/adguard/conf" "$BASE_DIR/adguard/work"
 MSG_CACHE=$((USER_RAM / 3))
 RRSET_CACHE=$((USER_RAM * 2 / 3))
@@ -101,12 +106,7 @@ server:
     so-rcvbuf: 1m
 EOF
 
-# Tạo file Compose (Chỉ mount SSL nếu có)
-SSL_MOUNT=""
-if [ "$HAS_SSL" = true ]; then
-    SSL_MOUNT="- /etc/letsencrypt:/etc/letsencrypt:ro"
-fi
-
+# Tạo file Compose với SSL Mount linh hoạt
 cat <<EOF > "$BASE_DIR/docker-compose.yml"
 services:
   unbound:
@@ -123,23 +123,22 @@ services:
     volumes:
       - ./adguard/work:/opt/adguardhome/work
       - ./adguard/conf:/opt/adguardhome/conf
-      $SSL_MOUNT
+      $( [ "$HAS_SSL" = true ] && echo "- /etc/letsencrypt:/etc/letsencrypt:ro" )
 EOF
 
 cd "$BASE_DIR" && docker compose up -d --force-recreate
-
-# Dọn dẹp hàng tuần
 (crontab -l 2>/dev/null | grep -v "docker system prune" ; echo "0 0 * * 0 docker system prune -af > /dev/null 2>&1") | crontab -
 
-# --- PHẦN 6: HƯỚNG DẪN SAU CÀI ĐẶT ---
+# --- PHẦN 7: HƯỚNG DẪN ---
 SERVER_IP=$(hostname -I | awk '{print $1}')
 echo -e "\n\e[32m======================================================================"
 echo -e "   🎉 CÀI ĐẶT DNS MASTER THÀNH CÔNG!"
 echo -e "======================================================================\e[0m"
-echo -e "👉 Truy cập Web UI thiết lập: \e[36mhttp://$SERVER_IP:$ADG_PORT\e[0m"
-echo -e "✅ Tường lửa (UFW) đã được bật và mở cổng: 53, $ADG_PORT"
-echo -e "✅ Đã thiết lập Tự động dọn dẹp rác Docker vào 0h Chủ Nhật."
+echo -e "👉 Web UI: \e[36mhttp://$SERVER_IP:$ADG_PORT\e[0m"
+echo -e "✅ Tường lửa: Đã mở cổng 53 và $ADG_PORT."
+echo -e "✅ Dọn dẹp: Tự động chạy vào 0h Chủ Nhật hàng tuần."
 echo -e "\e[33mBƯỚC TIẾP THEO:\e[0m"
-echo -e "1. Vào AdGuard -> DNS Settings -> Upstream: 127.0.0.1:5335"
-echo -e "2. Link Filter của Hoa FD (https://github.com/hoafd/my-dns-blocklist): https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
+echo -e "1. AdGuard -> DNS Settings -> Upstream: 127.0.0.1:5335"
+echo -e "2. Filter của Hoa FD (https://github.com/hoafd/my-dns-blocklist):"
+echo -e "https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
 echo -e "======================================================================\n"
