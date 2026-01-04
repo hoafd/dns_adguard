@@ -21,7 +21,7 @@ Hệ thống DNS chặn quảng cáo bảo mật cao tích hợp **AdGuard Home*
 Sao chép và dán lệnh dưới đây vào Terminal của bạn:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/dns_setup.sh | sudo -E bash
 ```
 
 ---
