@@ -113,5 +113,6 @@ echo -e "   - Key: /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
 fi
 echo -e "\e[33mBƯỚC TIẾP THEO:\e[0m"
 echo -e "1. Vào AdGuard -> DNS Settings -> Upstream: 127.0.0.1:5335"
-echo -e "2. Thêm Blocklist từ dự án 'my-dns-blocklist' của bạn."
+echo -e "2. Có thể thêm Blocklist từ dự án của Hoa FD https://github.com/hoafd/my-dns-blocklist"
+echo -e "https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
 echo -e "\e[32m======================================================================\n\e[0m"
