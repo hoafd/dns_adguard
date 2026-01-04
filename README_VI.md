@@ -80,4 +80,4 @@ Nếu dự án này giúp ích cho bạn, hãy ủng hộ tôi một ly cà phê
 
 ## ⚖️ Giấy phép
 
-Dự án được cấp phép theo **MIT License**. Copyright (c) 2026 **hoafd**.
+Dự án được cấp phép theo [MIT License](LICENSE). Copyright (c) 2026 **hoafd**.
