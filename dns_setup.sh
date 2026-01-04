@@ -1,6 +1,6 @@
 #!/bin/bash
 # REPO: https://github.com/hoafd/dns_adguard
-# CẬP NHẬT: Auto-Docker, Port 53 Fix, SSL Renew Hook & Weekly Cleanup
+# CẬP NHẬT: Chọn Port quản trị, Auto-Docker, Port 53 Fix & Weekly Cleanup
 
 if [ "$(id -u)" -ne 0 ]; then echo "Vui lòng dùng: sudo -E bash ./dns_setup.sh"; exit 1; fi
 BASE_DIR="/opt/server-central/dns"
@@ -18,7 +18,7 @@ if ! docker compose version > /dev/null 2>&1; then
     apt-get update && apt-get install -y docker-compose-v2 -qq
 fi
 
-# --- PHẦN 2: GIẢI PHÓNG CỔNG 53 TRIỆT ĐỂ ---
+# --- PHẦN 2: GIẢI PHÓNG CỔNG 53 ---
 echo ">>> Giải phóng cổng 53..."
 apt-get install -y psmisc -qq
 fuser -k 53/udp 2>/dev/null || true
@@ -27,23 +27,19 @@ systemctl stop systemd-resolved || true
 systemctl disable systemd-resolved || true
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 
-# --- PHẦN 3: THIẾT LẬP THÔNG SỐ ---
+# --- PHẦN 3: THIẾT LẬP THÔNG SỐ & CỔNG ---
 docker rm -f unbound adguard 2>/dev/null || true
+
+# Chọn cổng quản trị AdGuard
+printf "Chọn cổng quản trị AdGuard (Mặc định 3000): "
+read INPUT_PORT < /dev/tty
+ADG_PORT=${INPUT_PORT:-3000}
+
 FREE_RAM=$(free -m | awk '/^Mem:/{print $7}')
-printf "Cấp RAM cho Unbound (MB, Enter để lấy 768, RAM rảnh: $FREE_RAM MB): "
+printf "Cấp RAM cho Unbound (MB, mặc định 768, RAM rảnh: $FREE_RAM MB): "
 read INPUT_RAM < /dev/tty
 USER_RAM=${INPUT_RAM:-768}
 USER_RAM=$(echo "$USER_RAM" | tr -dc '0-9')
-
-# Cloudflare Tunnel
-if systemctl is-active --quiet cloudflared; then
-    printf "Tunnel Token (Enter để giữ nguyên): "
-    read CF_TOKEN < /dev/tty
-else
-    printf "Dán Tunnel Token [BẮT BUỘC]: "
-    read CF_TOKEN < /dev/tty
-fi
-[ ${#CF_TOKEN} -gt 50 ] && (cloudflared service uninstall || true; cloudflared service install "$CF_TOKEN")
 
 # SSL Setup
 printf "Nhập Cloudflare API Token (Enter nếu đã có SSL): "
@@ -61,6 +57,10 @@ if [ ${#CF_SSL_TOKEN} -gt 10 ]; then
       -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "$EMAIL" --deploy-hook "docker restart adguard"
     HAS_SSL=true
 fi
+
+# Mở cổng Firewall dựa trên cổng đã chọn
+ufw allow 22/tcp && ufw allow 53 && ufw allow $ADG_PORT/tcp && ufw allow 80/tcp && ufw allow 443/tcp
+echo "y" | ufw enable
 
 # --- PHẦN 4: KHỞI CHẠY DOCKER ---
 mkdir -p "$BASE_DIR/unbound" "$BASE_DIR/adguard/conf" "$BASE_DIR/adguard/work"
@@ -96,23 +96,21 @@ EOF
 
 cd "$BASE_DIR" && docker compose up -d --force-recreate
 
-# --- PHẦN 5: AUTO CLEANUP CRONJOB (Mỗi Chủ Nhật lúc 0h) ---
+# --- PHẦN 5: AUTO CLEANUP ---
 (crontab -l 2>/dev/null | grep -v "docker system prune" ; echo "0 0 * * 0 docker system prune -af > /dev/null 2>&1") | crontab -
 
 # --- PHẦN 6: HƯỚNG DẪN SAU CÀI ĐẶT ---
 SERVER_IP=$(hostname -I | awk '{print $1}')
 echo -e "\n\e[32m======================================================================"
-echo -e "   🎉 CẬP NHẬT DNS MASTER THÀNH CÔNG!"
+echo -e "   🎉 CÀI ĐẶT DNS MASTER THÀNH CÔNG!"
 echo -e "======================================================================\e[0m"
-echo -e "👉 Truy cập Web UI thiết lập: \e[36mhttp://$SERVER_IP:3000\e[0m"
+echo -e "👉 Truy cập Web UI thiết lập: \e[36mhttp://$SERVER_IP:$ADG_PORT\e[0m"
+echo -e "✅ Đã mở cổng $ADG_PORT trên Firewall."
 echo -e "✅ Đã thiết lập Tự động dọn dẹp rác Docker vào 0h Chủ Nhật hàng tuần."
 if [ "$HAS_SSL" = true ]; then
 echo -e "✅ Chứng chỉ cho: \e[32m$DOMAIN_NAME\e[0m"
-echo -e "   - Cert: /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
-echo -e "   - Key: /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
 fi
 echo -e "\e[33mBƯỚC TIẾP THEO:\e[0m"
 echo -e "1. Vào AdGuard -> DNS Settings -> Upstream: 127.0.0.1:5335"
-echo -e "2. Có thể thêm Blocklist từ dự án của Hoa FD https://github.com/hoafd/my-dns-blocklist"
-echo -e "https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
-echo -e "\e[32m======================================================================\n\e[0m"
+echo -e "2. Thêm Filter của Hoa FD nếu muốn (https://github.com/hoafd/my-dns-blocklist): https://raw.githubusercontent.com/hoafd/my-dns-blocklist/main/dns_filter.txt"
+echo -e "======================================================================\n"
