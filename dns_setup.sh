@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-# SCRIPT: CÀI ĐẶT DNS MASTER (ADGUARD + UNBOUND) - TỐI ƯU RAM TRỐNG
+# SCRIPT: CÀI ĐẶT DNS MASTER (ADGUARD + UNBOUND) - BẢO MẬT & TỐI ƯU
 # REPO: https://github.com/hoafd/dns_adguard
 # ==============================================================================
 
@@ -9,14 +9,12 @@ REAL_USER=${SUDO_USER:-$USER}
 BASE_DIR="/opt/server-central/dns"
 set -e
 
-# 1. KIỂM TRA RAM TRỐNG (AVAILABLE RAM)
+# 1. KIỂM TRA RAM TRỐNG
 FREE_RAM=$(free -m | awk '/^Mem:/{print $7}')
 SUGGESTED_RAM=$((FREE_RAM / 2))
-echo -e "\e[33m>>> KIỂM TRA RAM: Máy bạn đang còn trống thực tế $FREE_RAM MB RAM.\e[0m"
-echo -e "\e[32m>>> Mức đề nghị cấp cho DNS Master: ${SUGGESTED_RAM} MB.\e[0m"
-read -p "Nhập số RAM bạn muốn cấp (MB, nhấn Enter để lấy $SUGGESTED_RAM): " USER_RAM
+echo -e "\e[33m>>> HỆ THỐNG: Còn trống $FREE_RAM MB RAM.\e[0m"
+read -p "Cấp RAM cho DNS (MB, nhấn Enter để lấy $SUGGESTED_RAM): " USER_RAM
 USER_RAM=${USER_RAM:-$SUGGESTED_RAM}
-
 MSG_CACHE=$((USER_RAM / 3))
 RRSET_CACHE=$((USER_RAM * 2 / 3))
 
@@ -28,27 +26,14 @@ if lsof -i :53 > /dev/null 2>&1; then
 fi
 
 if systemctl is-active --quiet cloudflared; then
-    echo -e "\e[32m[✓] Tunnel đang chạy.\e[0m"
-    read -p "Nhập Token mới (nhấn Enter để giữ nguyên): " CF_TOKEN
+    echo -e "\e[32m[✓] Cloudflare Tunnel đã sẵn sàng.\e[0m"
+    read -p "Nhập Token mới (hoặc Enter để bỏ qua): " CF_TOKEN
 else
     read -p "Nhập Cloudflare Tunnel Token: " CF_TOKEN
 fi
 [ -n "$CF_TOKEN" ] && (cloudflared service uninstall || true; cloudflared service install "$CF_TOKEN")
 
-# 3. CÀI ĐẶT SSL (NẾU CHƯA CÓ)
-EXISTING_CERT=$(ls /etc/letsencrypt/live/ 2>/dev/null | head -n 1 || true)
-if [ -z "$EXISTING_CERT" ]; then
-    read -p "Nhập Tên miền (VD: dns.hoafd.id.vn): " DOMAIN_NAME
-    read -p "Nhập Cloudflare API Token: " CF_SSL_TOKEN
-    read -p "Nhập Email: " EMAIL
-    apt update && apt install -y certbot python3-certbot-dns-cloudflare -qq
-    mkdir -p ~/.secrets && echo "dns_cloudflare_api_token = $CF_SSL_TOKEN" > ~/.secrets/cloudflare.ini
-    chmod 600 ~/.secrets/cloudflare.ini
-    certbot certonly --dns-cloudflare --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
-      -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "$EMAIL"
-fi
-
-# 4. CẤU HÌNH DOCKER
+# 3. CÀI ĐẶT DOCKER & CẤU HÌNH
 mkdir -p "$BASE_DIR/unbound" "$BASE_DIR/adguard/conf" "$BASE_DIR/adguard/work"
 
 cat <<EOF > "$BASE_DIR/unbound/unbound.conf"
@@ -72,10 +57,8 @@ services:
     image: mvance/unbound:latest
     container_name: unbound
     restart: unless-stopped
-    volumes:
-      - ./unbound/unbound.conf:/opt/unbound/etc/unbound/unbound.conf:ro
+    volumes: ["./unbound/unbound.conf:/opt/unbound/etc/unbound/unbound.conf:ro"]
     network_mode: host
-
   adguard:
     image: adguard/adguardhome:latest
     container_name: adguard
@@ -88,7 +71,21 @@ services:
     depends_on: [unbound]
 EOF
 
-ufw allow 22/tcp && ufw allow 53 && echo "y" | ufw enable
+# 4. FIREWALL (CHỈ MỞ CỔNG CẦN THIẾT)
+ufw allow 22/tcp
+ufw allow 53
+ufw default deny incoming
+echo "y" | ufw enable
+
+# 5. KHỞI CHẠY & HƯỚNG DẪN
 chown -R "$REAL_USER:$REAL_USER" "$BASE_DIR"
 cd "$BASE_DIR" && docker compose up -d
-echo -e "\e[32m[✓] DNS MASTER HOÀN TẤT!\e[0m"
+
+echo -e "\n\e[32m======================================================================"
+echo -e "   CÀI ĐẶT DNS MASTER HOÀN TẤT!"
+echo -e "======================================================================\e[0m"
+echo -e "\e[33mBƯỚC TIẾP THEO:\e[0m"
+echo -e "1. Cloudflare Zero Trust: Trỏ domain về http://localhost:3000"
+echo -e "2. Truy cập AdGuard UI: Thiết lập DNS Upstream là '127.0.0.1:5335'"
+echo -e "3. Bảo mật: Cổng 3000 đã bị UFW chặn, chỉ truy cập được qua Tunnel."
+echo -e "======================================================================\n"
