@@ -39,6 +39,14 @@ Tại giao diện Web AdGuard -> **Settings** -> **Encryption settings**:
 Tại mục **Settings** -> **DNS Settings** -> **Upstream DNS servers**, điền:
 `127.0.0.1:5335`
 
+## 🩺 Kiểm tra sức khỏe hệ thống
+
+Để đảm bảo các Container và bộ lọc đang hoạt động đúng cách, bạn có thể chạy script kiểm tra nhanh:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_health.sh | bash
+```
+
 ---
 
 ## ⚖️ Giấy phép
