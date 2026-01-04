@@ -50,4 +50,4 @@ curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/check_dns_hea
 ---
 
 ## ⚖️ Giấy phép
-Dự án được cấp phép theo **MIT License**. Copyright (c) 2026.
+Dự án được cấp phép theo [MIT License](LICENSE). Copyright (c) 2026 **hoafd**.
