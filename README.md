@@ -14,6 +14,16 @@ Hệ thống DNS cá nhân chặn quảng cáo mạnh mẽ, tích hợp **AdGuar
 
 ---
 
+## 📂 Cấu trúc thư mục hệ thống
+Mọi dữ liệu được lưu trữ tập trung tại máy chủ ở đường dẫn:
+- **Thư mục gốc:** `/opt/server-central/dns/`
+- **Cấu hình Unbound:** `./unbound/unbound.conf`
+- **Dữ liệu AdGuard:** - `./adguard/conf/` (Chứa file AdGuardHome.yaml)
+  - `./adguard/work/` (Chứa Database và logs)
+- **Chứng chỉ SSL:** `/etc/letsencrypt/live/<domain-cua-ban>/` (Được mount vào Docker)
+
+---
+
 ## 🛠️ Hướng dẫn cài đặt nhanh
 
 Sao chép và dán lệnh dưới đây vào Terminal của bạn:
