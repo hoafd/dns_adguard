@@ -80,4 +80,4 @@ If this project helps you, please consider supporting me with a coffee:
 
 ## ⚖️ License
 
-This project is licensed under the **MIT License**. Copyright (c) 2026 **hoafd**.
+This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 **hoafd**.
