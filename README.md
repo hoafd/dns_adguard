@@ -23,7 +23,7 @@ An optimized personal DNS system featuring powerful ad-blocking and recursive re
 Run the following command for automatic installation on **Ubuntu 22.04/24.04**:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh | sudo -E bash
 ```
 
 **Note:** Ensure you have your Cloudflare API Token ready if you intend to use SSL.
@@ -87,7 +87,7 @@ Hệ thống DNS cá nhân tối ưu hóa, tích hợp chặn quảng cáo mạn
 Chạy lệnh sau để cài đặt tự động trên **Ubuntu 22.04/24.04**:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh](https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh) | sudo -E bash
+curl -sSL https://raw.githubusercontent.com/hoafd/dns_adguard/main/install_manager.sh | sudo -E bash
 ```
 
 **Lưu ý:** Chuẩn bị sẵn Cloudflare API Token nếu bạn muốn cài đặt SSL.
